@@ -605,6 +605,22 @@ def analysis_metrics(g,p1,f,r0,r1,p2='analysis'):
     fl.write('\n\nDegree Centrality: '+str(deg_cen))
     fl.write('\n\nShortest Path: '+str(nx.shortest_path(g)))
     fl.write('\n\nShortest Path Length for nodes: '+str(nx.shortest_path_length(g)))
+    
+    # writing the hubs and authority for each node
+    hubs,auth=nx.hits(g)
+    fl.write('\n\nHubs score: '+str(hubs))
+    fl.write('\n\nAuthority score: '+str(auth))
+
+    # calculate the number of hubs
+    # as implemented in Poli et al. 2015
+    # hub is a node having a degree value of at least one standard deviation above the network's mean value
+    # calculating the one std dev above mean measure using scipy's zscore function 
+    zs=st.zscore(nx.degree(g).values())
+    hubs=[nh for nh in range(0,len(zs)) if zs[nh]>1]
+    fl.write('\n\nHubs: '+str(hubs))
+    fl.write('\n\nNumber of Hubs: '+str(len(hubs)))
+   	
+
     if nx.is_connected(g):
         fl.write('\n\nAverage Shortest Path Length: '+str(nx.average_shortest_path_length(g)))
     else:
@@ -616,8 +632,14 @@ def analysis_metrics(g,p1,f,r0,r1,p2='analysis'):
     fl.write("\n\nModularity: "+str(mod))
     fl.close()
 
+    # writing edgelist to a separate file
+    # added number of edges
+    # if importing edgelist for graph reconstruction, 
+    # read the file using readlines and consider only the first line, 
+    # discard the rest of the file
     fl=open(path+'edges_'+f.split('/')[-1]+'_'+str(p5)+'_'+str(r0)+'_'+str(r1)+'.txt','w')
     fl.write(str(g.edges()))
+    fl.write('\n\nNumber of edges: '+str(g.number_of_edges()))
     fl.close()
 
 
